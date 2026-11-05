@@ -177,13 +177,21 @@ function buildEmailText(data, ts) {
 }
 
 module.exports = async (req, res) => {
+  // CORS Preflight
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Accept');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    return res.status(204).end();
+  }
+
   // Only accept POST
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
     return res.status(405).json({ success: false, error: 'Method not allowed.' });
   }
 
-  // CORS — same-origin only
+  // CORS — same-origin / vary origin
   res.setHeader('Vary', 'Origin');
 
   // Body size guard
@@ -192,44 +200,39 @@ module.exports = async (req, res) => {
     return res.status(413).json({ success: false, error: 'Request too large.' });
   }
 
-  // Read body — supports Vercel's parsed body and raw JSON requests
+  // Read body safely whether it arrives parsed (Vercel runtime), as string/Buffer,
+  // or as a stream/async iterable (Node.js IncomingMessage or unit test mock)
   let body;
-
   try {
-    if (
-      req.body &&
-      typeof req.body === 'object' &&
-      !Buffer.isBuffer(req.body)
-    ) {
-      // Vercel has already parsed the JSON body
+    if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body) && typeof req.body[Symbol.asyncIterator] !== 'function') {
+      // Vercel serverless runtime automatically parses JSON bodies
       body = req.body;
+    } else if (typeof req.body === 'string') {
+      body = JSON.parse(req.body);
+    } else if (Buffer.isBuffer(req.body)) {
+      body = JSON.parse(req.body.toString('utf8'));
     } else {
-      let raw;
+      const stream = (req.body && typeof req.body[Symbol.asyncIterator] === 'function')
+        ? req.body
+        : (typeof req[Symbol.asyncIterator] === 'function' ? req : null);
 
-      if (Buffer.isBuffer(req.body)) {
-        raw = req.body.toString('utf8');
-      } else if (typeof req.body === 'string') {
-        raw = req.body;
-      } else {
-        // Fallback for an unparsed request stream
+      if (stream) {
         const chunks = [];
-
-        for await (const chunk of req) {
-          chunks.push(
-            Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
-          );
-        }
-
-        raw = Buffer.concat(chunks).toString('utf8');
+        for await (const chunk of stream) chunks.push(chunk);
+        const raw = Buffer.concat(chunks).toString('utf8');
+        body = raw ? JSON.parse(raw) : {};
+      } else {
+        body = {};
       }
-
-      body = JSON.parse(raw);
     }
   } catch (e) {
-    return res.status(400).json({
-      success: false,
-      error: 'Invalid request body.'
-    });
+    return res.status(400).json({ success: false, error: 'Invalid JSON.' });
+  }
+
+  // Rate limit
+  const ip = getClientIp(req);
+  if (!rateLimit(ip)) {
+    return res.status(429).json({ success: false, error: 'Too many submissions. Please try again in a minute.' });
   }
 
   // Validate
@@ -246,9 +249,9 @@ module.exports = async (req, res) => {
   const ts = new Date().toISOString();
 
   // Check env vars
-  const RESEND_API_KEY = process.env.RESEND_API_KEY;
-  const CONTACT_FROM_EMAIL = process.env.CONTACT_FROM_EMAIL;
-  const CONTACT_TO_EMAIL = process.env.CONTACT_TO_EMAIL || 'info@ehsflux.com';
+  const RESEND_API_KEY = (process.env.RESEND_API_KEY || '').trim();
+  const CONTACT_FROM_EMAIL = (process.env.CONTACT_FROM_EMAIL || '').trim();
+  const CONTACT_TO_EMAIL = (process.env.CONTACT_TO_EMAIL || 'info@ehsflux.com').trim();
 
   if (!RESEND_API_KEY || !CONTACT_FROM_EMAIL) {
     console.error('Missing required environment variables: RESEND_API_KEY and/or CONTACT_FROM_EMAIL.');
@@ -282,7 +285,7 @@ module.exports = async (req, res) => {
       body: JSON.stringify(emailPayload)
     });
 
-    const responseBody = await response.json().catch(function () { return {}; });
+    const responseBody = await response.json().catch(() => ({}));
 
     if (!response.ok) {
       console.error('Resend API error:', response.status, JSON.stringify(responseBody));

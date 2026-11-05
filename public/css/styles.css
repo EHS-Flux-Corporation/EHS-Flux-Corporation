@@ -484,6 +484,56 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
 }
 
 /* ============================================================
+   WATER TREATMENT EQUIPMENT
+   ============================================================ */
+.water-treatment { background: var(--bg); }
+.water-treatment-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+.water-treatment-card {
+  grid-column: span 2;
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition), box-shadow var(--transition), border-color var(--transition);
+}
+.water-treatment-card:nth-child(n+4) { grid-column: span 3; }
+.water-treatment-card:hover {
+  border-color: var(--aqua);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.water-treatment-image {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: var(--white);
+}
+.water-treatment-card:first-child .water-treatment-image { object-fit: contain; }
+.water-treatment-card-content { padding: 1rem 1.1rem 1.25rem; }
+.water-treatment-title {
+  font-size: 1.05rem;
+  margin-bottom: 0.5rem;
+}
+.water-treatment-subtitle {
+  color: var(--blue);
+  font-size: 0.86rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: -0.15rem 0 0.45rem;
+}
+.water-treatment-desc {
+  color: var(--muted);
+  font-size: 0.9rem;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* ============================================================
    ZLD SECTION
    ============================================================ */
 .zld-section {
@@ -959,6 +1009,8 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   .hero-inner { grid-template-columns: 1fr; gap: 3rem; }
   .hero-content { max-width: none; }
   .hero-visual { max-width: 560px; margin: 0 auto; }
+  .water-treatment-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .water-treatment-card, .water-treatment-card:nth-child(n+4) { grid-column: span 1; }
   .zld-inner { grid-template-columns: 1fr; gap: 3rem; }
   .about-inner { grid-template-columns: 1fr; gap: 2.5rem; }
   .about-visual { position: static; max-width: 560px; margin: 0 auto; }
@@ -1013,6 +1065,7 @@ select:focus-visible, textarea:focus-visible, [tabindex]:focus-visible {
   .hero-trust { gap: 0.5rem 1rem; }
   .hero-visual-badge { width: 100px; height: 100px; }
 
+  .water-treatment-grid { grid-template-columns: 1fr; }
   .zld-checklist { grid-template-columns: 1fr; }
   .strengths-grid { grid-template-columns: 1fr; }
 

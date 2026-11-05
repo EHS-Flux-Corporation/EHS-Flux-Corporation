@@ -72,7 +72,7 @@
 
   // ---------- Active nav link on scroll ----------
   var navLinks = Array.from(document.querySelectorAll('.nav-link'));
-  var sections = ['main', 'services', 'zld', 'industries', 'about', 'contact']
+  var sections = ['main', 'services', 'water-treatment', 'zld', 'industries', 'about', 'contact']
     .map(function (id) { return document.getElementById(id); })
     .filter(Boolean);
 

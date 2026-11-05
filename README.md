@@ -34,7 +34,7 @@ A clean, fresh, professional, blue-and-white corporate website for EHS Flux Corp
 
 This project is a complete corporate website for EHS Flux Corporation. It includes:
 
-- A single-page marketing site with hero, six consulting service cards, ZLD solutions section, industries grid, About section with four strengths, and a contact form.
+- A single-page marketing site with hero, six consulting service cards, a five-image Water Treatment equipment gallery, ZLD solutions section, industries grid, About section with four strengths, and a contact form.
 - A top information bar with telephone, email, and address.
 - A sticky navigation with a prominent "Send an Enquiry" CTA.
 - A responsive mobile navigation menu.
@@ -98,6 +98,11 @@ ehs-flux/
 │   │       ├── about.jpg                    # About section image
 │   │       ├── cta-banner.jpg               # CTA banner image
 │   │       ├── service-water-treatment.jpg
+│   │       ├── water-treatment-multimedia-filter.jpg
+│   │       ├── water-treatment-softener.jpg
+│   │       ├── water-treatment-demineralization.jpg
+│   │       ├── water-treatment-ultrafiltration.jpg
+│   │       ├── water-treatment-ro-plant.jpg
 │   │       ├── service-etp-upgradation.jpg
 │   │       ├── service-feasibility.jpg
 │   │       ├── service-project-support.jpg
